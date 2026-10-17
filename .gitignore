@@ -1,0 +1,55 @@
+# ==============================================================================
+# Root .gitignore for Alehu (Backend + Frontend)
+# ==============================================================================
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ------------------------------------------------------------------------------
+# Backend (Python / Flask)
+# ------------------------------------------------------------------------------
+backend/.env
+backend/.venv/
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/.pytest_cache/
+backend/.hypothesis/
+htmlcov/
+.coverage
+coverage.xml
+
+# AI Planning and Specification tools
+backend/.kiro/
+.kiro/
+
+# ------------------------------------------------------------------------------
+# Frontend (Node / React / Next.js / Vite)
+# ------------------------------------------------------------------------------
+frontend/node_modules/
+node_modules/
+frontend/.next/
+frontend/dist/
+frontend/build/
+frontend/.env*.local
+frontend/.turbo/
+.vercel
