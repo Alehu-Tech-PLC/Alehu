@@ -1,63 +1,65 @@
-# Alehu Project
+# Alehu AI
 
-A fullstack application architecture containing both the backend API and frontend client in a unified repository.
+Smart child safety systems: a Next.js guardian experience, a Flask + PostgreSQL API, and a wearable ingest path.
+
+Keep product materials in this repository confidential.
 
 ---
 
-## 📁 Repository Structure
+## Structure
 
 ```
 Alehu/
-├── backend/            # Flask + PostgreSQL REST API
-│   ├── app/            # Application factory, models, routes, schemas, services
-│   ├── migrations/     # Database migration scripts
-│   ├── tests/          # Automated pytest suite (42 tests)
-│   ├── README.md       # Detailed backend API reference
-│   ├── SETUP_GUIDE.md  # Step-by-step setup guide for fresh clones
-│   └── run.py          # Backend entry point
-├── frontend/           # Frontend client application (coming soon / configurable)
-├── .gitignore          # Root ignore rules for Python & Node ecosystems
-└── README.md           # Fullstack project overview
+├── backend/     Flask API, PostgreSQL, JWT, alerts, device ingest
+├── frontend/    Next.js 15 marketing site + guardian dashboard
+└── docs/        Business and technical PDFs
 ```
 
 ---
 
-## 🚀 Getting Started
+## Backend
 
-### 1. Backend Setup (Flask + PostgreSQL)
-For detailed setup instructions, database migrations, and testing:
-- 📖 [Backend Setup Guide](backend/SETUP_GUIDE.md)
-- 📖 [Backend API Documentation](backend/README.md)
-- 📮 Postman Collection: `backend/Alehu_API.postman_collection.json`
-
-Quick start:
 ```powershell
 cd backend
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+flask db upgrade
+python run.py --seed
 python run.py
 ```
 
-### 2. Frontend Setup
-*(When frontend is initialized)*
+API: `http://127.0.0.1:5000`  
+Health: `GET /api/health`
+
+Seed login: `admin@alehu.com` / `Admin123!`
+
+---
+
+## Frontend
+
 ```powershell
 cd frontend
+Copy-Item .env.example .env.local
 npm install
 npm run dev
 ```
 
+Site: `http://localhost:3000`  
+Dashboard: `http://localhost:3000/login`
+
 ---
 
-## 🌿 Git Workflow
+## Documentation
 
-Since this repository root holds both `backend` and `frontend`, any commits and branches track the entire fullstack project together:
+Generate presentation PDFs:
 
 ```powershell
-# Stage all fullstack changes
-git add .
-
-# Commit
-git commit -m "feat: setup fullstack structure with backend API"
-
-# Push
-git push origin master
+python docs/generate_docs.py
 ```
+
+Outputs:
+
+- `docs/Alehu_Business_Presentation.pdf`
+- `docs/Alehu_Technical_Documentation.pdf` (includes hardware bill of materials)

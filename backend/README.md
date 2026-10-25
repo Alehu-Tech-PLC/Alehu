@@ -2,7 +2,7 @@
 
 A production-ready REST API backend built with **Python 3.12**, **Flask 3.0**, **SQLAlchemy 2.0**, **Flask-Migrate**, and **PostgreSQL 17**.
 
-Features secure JWT authentication, role-based access control (RBAC), Marshmallow request/response validation, automated pagination, standardized JSON envelopes, a 42-test automated test suite, and an interactive Postman collection.
+Features secure JWT authentication, role-based access control (RBAC), Marshmallow request/response validation, automated pagination, standardized JSON envelopes, wearable telemetry ingest, safety alerts, CORS for the Next.js app, an automated test suite, and an interactive Postman collection.
 
 > 📖 **First time cloning this repository?** Follow the step-by-step [Fresh Clone Setup Guide (SETUP_GUIDE.md)](SETUP_GUIDE.md) to get the backend running in under 5 minutes.
 
@@ -85,9 +85,10 @@ DB_PASSWORD=12345
 DATABASE_URL=postgresql://postgres:12345@localhost:5432/alehu
 ```
 
-### 4. Run Migrations & Seed Sample Data
-Migrations are already generated and applied. To seed sample data into PostgreSQL:
+### 4. Create the Database Schema & Seed Sample Data
+On a fresh database, apply the committed migrations before seeding:
 ```powershell
+python -m flask --app run.py db upgrade
 .\.venv\Scripts\python.exe run.py --seed
 ```
 
@@ -180,7 +181,22 @@ All API endpoints return a uniform JSON format:
 | `PUT` | `/api/devices/<id>` | Authenticated | Update device details |
 | `DELETE` | `/api/devices/<id>` | Authenticated | Delete device record |
 
-### 5. Roles & Permissions (`/api/roles` & `/api/permissions`)
+### 5. Alerts (`/api/alerts`)
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| `GET` | `/api/alerts` | Authenticated | List safety alerts (filter `acknowledged=true/false`) |
+| `POST` | `/api/alerts` | Authenticated | Create an alert |
+| `POST` | `/api/alerts/<id>/acknowledge` | Authenticated | Mark an alert handled |
+
+### 6. Dashboard, ingest, health
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| `GET` | `/api/dashboard/summary` | Authenticated | Counts, devices, recent alerts |
+| `POST` | `/api/ingest/telemetry` | JWT or `X-Device-Key` | Wearable heartbeat / event ingest |
+| `GET` | `/api/health` | Public | Liveness |
+| `POST` | `/api/contact` | Public | Partnership inquiry |
+
+### 7. Roles & Permissions (`/api/roles` & `/api/permissions`)
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
 | `GET` | `/api/roles` | Admin | List all roles |

@@ -22,6 +22,7 @@ class Customer(db.Model):
     # Relationships
     user = db.relationship('User', back_populates='customers')
     devices = db.relationship('Device', back_populates='customer', lazy='dynamic')
+    alerts = db.relationship('Alert', back_populates='customer', lazy='dynamic')
 
     def __repr__(self):
         return f'<Customer {self.name}>'

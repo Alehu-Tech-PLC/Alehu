@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#0B3D4A"/>
+  <circle cx="980" cy="80" r="220" fill="#0F7A6C" fill-opacity="0.35"/>
+  <circle cx="160" cy="560" r="180" fill="#E8A317" fill-opacity="0.18"/>
+  <text x="80" y="210" fill="#E8F6F3" font-size="36" font-family="Georgia, serif">Alehu AI P.L.C.</text>
+  <text x="80" y="310" fill="#F7F4EE" font-size="72" font-family="Georgia, serif">Smart child safety</text>
+  <text x="80" y="390" fill="#F7F4EE" font-size="72" font-family="Georgia, serif">without surveillance.</text>
+  <text x="80" y="480" fill="#E8F6F3" font-size="28" font-family="Arial, sans-serif">Wearable sensors · Edge AI · Instant guardian alerts</text>
+</svg>

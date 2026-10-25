@@ -15,6 +15,14 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'fallback-jwt-secret-key')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    CORS_ORIGINS = [
+        origin.strip()
+        for origin in os.environ.get(
+            'CORS_ORIGINS',
+            'http://localhost:3000,http://127.0.0.1:3000',
+        ).split(',')
+        if origin.strip()
+    ]
 
 
 class DevelopmentConfig(Config):
@@ -24,7 +32,7 @@ class DevelopmentConfig(Config):
         'DATABASE_URL',
         'postgresql://postgres:12345@localhost:5432/alehu'
     )
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
 
 
 class TestingConfig(Config):
