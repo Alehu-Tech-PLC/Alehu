@@ -8,8 +8,8 @@ Usage:
 from flask import Flask
 
 from app.config import config_by_name
-from app.extensions import db, migrate, jwt, bcrypt
-from app.utils.responses import error_response
+from app.extensions import db, migrate, jwt, bcrypt, cors
+from app.utils.responses import error_response, success_response
 
 # ---------------------------------------------------------------------------
 # In-memory JWT blocklist (tokens added on logout are checked here)
@@ -35,11 +35,18 @@ def create_app(config_name: str = 'development') -> Flask:
     migrate.init_app(app, db)
     jwt.init_app(app)
     bcrypt.init_app(app)
+    cors.init_app(
+        app,
+        resources={r'/api/*': {'origins': app.config.get('CORS_ORIGINS', '*')}},
+        supports_credentials=True,
+        allow_headers=['Content-Type', 'Authorization', 'X-Device-Key'],
+        methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    )
 
     # ------------------------------------------------------------------
     # 2a. Import models so Flask-Migrate can auto-detect the schema
     # ------------------------------------------------------------------
-    from app.models import Role, Permission, role_permissions, User, Customer, Device  # noqa: F401
+    from app.models import Role, Permission, role_permissions, User, Customer, Device, Alert  # noqa: F401
 
     # ------------------------------------------------------------------
     # 3. Register blueprints  (imports inside factory → no circular deps)
@@ -50,13 +57,23 @@ def create_app(config_name: str = 'development') -> Flask:
     from app.routes.devices import devices_bp
     from app.routes.roles import roles_bp
     from app.routes.permissions import permissions_bp
+    from app.routes.alerts import alerts_bp
+    from app.routes.dashboard import dashboard_bp
+    from app.routes.ingest import ingest_bp
+    from app.routes.contact import contact_bp
+    from app.routes.health import health_bp
 
+    app.register_blueprint(health_bp,      url_prefix='/api')
+    app.register_blueprint(contact_bp,     url_prefix='/api')
     app.register_blueprint(auth_bp,        url_prefix='/api/auth')
     app.register_blueprint(users_bp,       url_prefix='/api/users')
     app.register_blueprint(customers_bp,   url_prefix='/api/customers')
     app.register_blueprint(devices_bp,     url_prefix='/api/devices')
     app.register_blueprint(roles_bp,       url_prefix='/api/roles')
     app.register_blueprint(permissions_bp, url_prefix='/api/permissions')
+    app.register_blueprint(alerts_bp,      url_prefix='/api/alerts')
+    app.register_blueprint(dashboard_bp,   url_prefix='/api/dashboard')
+    app.register_blueprint(ingest_bp,      url_prefix='/api/ingest')
 
     # ------------------------------------------------------------------
     # 4. Global HTTP error handlers

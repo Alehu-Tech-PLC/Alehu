@@ -1,4 +1,6 @@
-"""DeviceService — business logic for device management."""
+"""DeviceService — business logic for wearable device management."""
+from datetime import datetime, timezone
+
 from marshmallow import ValidationError
 
 from app.extensions import db
@@ -8,21 +10,26 @@ from app.models.user import User
 from app.utils.pagination import paginate_query
 
 
+TELEMETRY_FIELDS = (
+    'firmware_version',
+    'battery_level',
+    'last_latitude',
+    'last_longitude',
+)
+
+
 class DeviceService:
     @staticmethod
     def get_all(page: int = None, per_page: int = None) -> dict:
-        """Fetch a paginated list of devices."""
         query = Device.query.order_by(Device.id.asc())
         return paginate_query(query, page=page, per_page=per_page)
 
     @staticmethod
     def get_by_id(device_id: int) -> Device:
-        """Fetch a single device by primary key."""
         return db.session.get(Device, device_id)
 
     @staticmethod
     def create(data: dict) -> Device:
-        """Create a new device."""
         serial_number = data.get('serial_number', '').strip()
         if Device.query.filter_by(serial_number=serial_number).first():
             raise ValidationError({'serial_number': ['Device with this serial number already exists.']})
@@ -42,8 +49,12 @@ class DeviceService:
         device = Device(
             name=data['name'].strip(),
             serial_number=serial_number,
-            device_type=data.get('device_type'),
+            device_type=data.get('device_type') or 'wearable',
             status=data.get('status', 'active'),
+            firmware_version=data.get('firmware_version'),
+            battery_level=data.get('battery_level'),
+            last_latitude=data.get('last_latitude'),
+            last_longitude=data.get('last_longitude'),
             customer_id=customer_id,
             user_id=user_id,
         )
@@ -54,7 +65,6 @@ class DeviceService:
 
     @staticmethod
     def update(device_id: int, data: dict) -> Device:
-        """Update an existing device."""
         device = db.session.get(Device, device_id)
         if not device:
             return None
@@ -75,6 +85,12 @@ class DeviceService:
 
         if 'status' in data and data['status']:
             device.status = data['status']
+
+        for field in TELEMETRY_FIELDS:
+            if field in data:
+                setattr(device, field, data[field])
+                if field in ('last_latitude', 'last_longitude', 'battery_level'):
+                    device.last_seen = datetime.now(timezone.utc)
 
         if 'customer_id' in data:
             customer_id = data['customer_id']
@@ -97,7 +113,6 @@ class DeviceService:
 
     @staticmethod
     def delete(device_id: int) -> bool:
-        """Delete a device record."""
         device = db.session.get(Device, device_id)
         if not device:
             return False
