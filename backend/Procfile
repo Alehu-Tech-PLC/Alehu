@@ -1,0 +1,1 @@
+web: gunicorn --bind 0.0.0.0:8080 api.index:app --workers 2 --timeout 60
