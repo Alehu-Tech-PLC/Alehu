@@ -4,57 +4,59 @@ import { FormEvent, useState } from 'react';
 import { api } from '@/lib/api';
 
 export function ContactForm() {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
+  const [status, setStatus]   = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
     setStatus('loading');
     try {
       await api('/contact', {
         method: 'POST',
         body: JSON.stringify({
-          name: form.get('name'),
-          email: form.get('email'),
-          organization: form.get('organization'),
-          message: form.get('message'),
+          name: form.get('name'), email: form.get('email'),
+          organization: form.get('organization'), message: form.get('message'),
         }),
       });
       setStatus('ok');
-      setMessage('Received. We will reply from the Alehu team.');
-      event.currentTarget.reset();
-    } catch (error) {
+      setMessage('Received. We will reply from the Alehu Technologies team.');
+      e.currentTarget.reset();
+    } catch (err) {
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Could not send the inquiry.');
+      setMessage(err instanceof Error ? err.message : 'Could not send the inquiry.');
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-3xl bg-white p-6 shadow-card">
-      <label className="block text-sm font-medium">
-        Name
-        <input required name="name" className="mt-1 w-full rounded-2xl border border-navy/15 bg-cream px-4 py-3" />
-      </label>
-      <label className="mt-4 block text-sm font-medium">
-        Email
-        <input required type="email" name="email" className="mt-1 w-full rounded-2xl border border-navy/15 bg-cream px-4 py-3" />
-      </label>
-      <label className="mt-4 block text-sm font-medium">
-        Organization
-        <input name="organization" className="mt-1 w-full rounded-2xl border border-navy/15 bg-cream px-4 py-3" />
-      </label>
-      <label className="mt-4 block text-sm font-medium">
+    <form onSubmit={onSubmit} className="card p-6 space-y-4">
+      {(['Name','Email','Organization'] as const).map((label) => (
+        <label key={label} className="block text-sm font-medium" style={{ color: 'var(--ink)' }}>
+          {label}
+          <input
+            required={label !== 'Organization'}
+            type={label === 'Email' ? 'email' : 'text'}
+            name={label.toLowerCase()}
+            className="input mt-1"
+          />
+        </label>
+      ))}
+      <label className="block text-sm font-medium" style={{ color: 'var(--ink)' }}>
         Message
-        <textarea required name="message" rows={5} className="mt-1 w-full rounded-2xl border border-navy/15 bg-cream px-4 py-3" />
+        <textarea required name="message" rows={5} className="input mt-1 resize-none" />
       </label>
-      <button
-        disabled={status === 'loading'}
-        className="mt-5 w-full rounded-full bg-navy py-3 font-semibold text-cream disabled:opacity-60"
-      >
+      <button type="submit" disabled={status === 'loading'} className="btn w-full py-3">
         {status === 'loading' ? 'Sending…' : 'Send inquiry'}
       </button>
-      {message && <p className={`mt-3 text-sm ${status === 'ok' ? 'text-teal' : 'text-coral'}`}>{message}</p>}
+      {message && (
+        <p className="rounded-xl px-3 py-2 text-sm"
+          style={{
+            background: status === 'ok' ? 'var(--accent-bg)' : 'rgba(201,48,64,0.08)',
+            color: status === 'ok' ? 'var(--accent)' : 'var(--danger)',
+          }}>
+          {message}
+        </p>
+      )}
     </form>
   );
 }

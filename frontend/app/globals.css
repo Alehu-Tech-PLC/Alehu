@@ -2,84 +2,169 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Light mode tokens ─────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE
+═══════════════════════════════════════════════════════════════ */
 :root {
   color-scheme: light;
 
-  --color-ink:     #3D1A33;        /* dark plum text */
-  --color-canvas:  #FDF6F0;        /* warm cream page bg */
-  --color-surface: #FFFFFF;        /* card bg */
-  --color-border:  rgba(92,45,78,0.12);
+  --ink:        #0D0D0D;        /* primary text — near black          */
+  --ink-muted:  #6B6460;        /* secondary text — warm gray         */
+  --canvas:     #FAF7F4;        /* page background — warm white       */
+  --surface:    #FFFFFF;        /* card / panel                       */
+  --surface-2:  #F4F1ED;        /* inset / zebra rows                 */
+  --border:     #E8E2DB;        /* dividers, input rings              */
 
-  /* accent shortcuts used in components */
-  --color-accent:  #C9607A;        /* rose */
-  --color-accent2: #D4A04A;        /* gold */
+  --accent:     #E8637A;        /* rose — single primary accent       */
+  --accent-hv:  #CC4A62;        /* rose hover                         */
+  --accent-bg:  #FEF0F2;        /* rose tinted area                   */
+  --accent-txt: #B83050;        /* rose on light bg — readable text   */
+
+  --warn:       #C97C20;        /* gold — warnings                    */
+  --warn-bg:    #FEF4E4;
+  --danger:     #C02838;        /* crimson — critical                 */
+  --danger-bg:  #FEF0F0;
+
+  --shadow:     rgba(13,13,13,0.08);
 }
 
-/* ── Dark mode tokens ──────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE  — readable, high-contrast
+   Rule: text on dark must pass WCAG AA (≥4.5:1)
+═══════════════════════════════════════════════════════════════ */
 .dark {
   color-scheme: dark;
 
-  --color-ink:     #F2C4CE;        /* blush text on dark */
-  --color-canvas:  #1E0F1A;        /* very dark plum bg */
-  --color-surface: #2B1426;        /* card bg */
-  --color-border:  rgba(242,196,206,0.12);
+  --ink:        #F0EBE5;        /* primary text — off-white warm      */
+  --ink-muted:  #A89F97;        /* secondary — readable warm gray     */
+  --canvas:     #141210;        /* page bg — very dark warm black     */
+  --surface:    #1E1B18;        /* card bg                            */
+  --surface-2:  #272320;        /* inset rows                         */
+  --border:     #332E2A;        /* borders                            */
 
-  --color-accent:  #E8849A;        /* lighter rose on dark */
-  --color-accent2: #E8B96A;        /* lighter gold on dark */
+  --accent:     #F07588;        /* rose — lightened for dark bg       */
+  --accent-hv:  #E8637A;
+  --accent-bg:  rgba(240,117,136,0.14);
+  --accent-txt: #F07588;        /* readable on dark                   */
+
+  --warn:       #E8A03A;
+  --warn-bg:    rgba(232,160,58,0.12);
+  --danger:     #F05060;
+  --danger-bg:  rgba(240,80,96,0.12);
+
+  --shadow:     rgba(0,0,0,0.40);
 }
 
-/* ── Base ──────────────────────────────────────────────────────────────── */
-html {
-  scroll-behavior: smooth;
-}
+/* ═══════════════════════════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════════════════════════ */
+html { scroll-behavior: smooth; }
 
 body {
-  background-color: var(--color-canvas);
-  color: var(--color-ink);
+  background-color: var(--canvas);
+  color: var(--ink);
   @apply antialiased font-sans;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* ── Selection ─────────────────────────────────────────────────────────── */
-::selection {
-  background: #C9607A;
-  color: #fff;
-}
+::selection { background: var(--accent); color: #fff; }
 
-/* ── Scrollbar (webkit) ────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(92, 45, 78, 0.25);
-  border-radius: 99px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(242, 196, 206, 0.2);
-}
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(13,13,13,0.15); border-radius: 99px; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(240,235,229,0.12); }
 
-/* ── Utility: token-aware card ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENT UTILITIES
+═══════════════════════════════════════════════════════════════ */
 @layer components {
+
+  /* ── Cards ─────────────────────────────────────────── */
   .card {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    @apply rounded-3xl shadow-card;
-    transition: background-color 0.2s ease;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 16px var(--shadow);
+    @apply rounded-3xl;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+  .card-inset {
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    @apply rounded-2xl;
   }
 
-  .btn-primary {
-    background-color: var(--color-accent);
-    @apply rounded-full px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50;
+  /* ── Buttons ────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    @apply rounded-full px-5 py-2.5 text-sm transition-all;
   }
+  .btn:hover   { background-color: var(--accent-hv); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
   .btn-ghost {
-    @apply rounded-full border px-6 py-3 font-semibold transition hover:bg-blush-soft;
-    border-color: var(--color-border);
-    color: var(--color-ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    font-weight: 600;
+    @apply rounded-full px-5 py-2.5 text-sm transition-all;
   }
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background-color: var(--accent-bg);
+  }
+
+  /* ── Badges ─────────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--accent-bg);
+    color: var(--accent-txt);
+    @apply rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .badge-warn   { background-color: var(--warn-bg);   color: var(--warn);   }
+  .badge-danger { background-color: var(--danger-bg); color: var(--danger); }
+  .badge-muted  { background-color: var(--surface-2); color: var(--ink-muted); }
+
+  /* ── Form inputs ─────────────────────────────────────── */
+  .input {
+    display: block;
+    width: 100%;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    @apply rounded-2xl px-4 py-3 text-sm transition-all;
+  }
+  .input::placeholder { color: var(--ink-muted); }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+
+  /* ── Stat tiles ──────────────────────────────────────── */
+  .stat-tile {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px var(--shadow);
+    @apply rounded-3xl p-5;
+  }
+
+  /* ── Section label ───────────────────────────────────── */
+  .section-label {
+    color: var(--accent-txt);
+    @apply text-xs font-bold uppercase tracking-[0.2em];
+  }
+
+  /* ── Divider ─────────────────────────────────────────── */
+  .divider { border-color: var(--border); }
 }

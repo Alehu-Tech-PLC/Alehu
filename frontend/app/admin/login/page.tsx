@@ -2,46 +2,64 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BrandMark } from '@/components/BrandMark';
 import { LoginForm } from '@/components/LoginForm';
+import { WearableLineup } from '@/components/illustrations/WearableLineup';
 
 export const metadata: Metadata = {
-  title: 'Admin sign in — Alehu AI',
+  title: 'Admin sign in — Alehu Technologies',
   robots: { index: false, follow: false },
 };
 
 export default function AdminLoginPage() {
   return (
     <main className="grid min-h-screen md:grid-cols-2">
-      <div className="hidden p-12 md:flex md:flex-col md:justify-between"
-        style={{ background: 'linear-gradient(135deg, #D4A04A, #C9607A)' }}>
+      {/* Left panel — rose gradient */}
+      <div className="hidden flex-col justify-between p-12 md:flex"
+        style={{ background: 'linear-gradient(145deg, var(--accent) 0%, var(--accent-hv) 100%)' }}>
         <BrandMark inverted />
-        <div>
-          <p className="font-display text-4xl text-white leading-snug">
-            Full control over the Alehu platform.
-          </p>
-          <p className="mt-4 text-white/75">
-            Manage users, monitor all devices, review every alert.
-          </p>
-          <dl className="mt-8 grid grid-cols-2 gap-4 text-sm">
+        <div className="space-y-8">
+          <WearableLineup className="w-full drop-shadow-xl" />
+          <div>
+            <p className="font-display text-3xl text-white leading-snug">
+              Full control over the Alehu platform.
+            </p>
+            <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.70)' }}>
+              Manage users, monitor all devices, review every alert, and keep the platform healthy.
+            </p>
+          </div>
+          <dl className="grid grid-cols-2 gap-3">
             {[
               ['User management',  'Activate / deactivate'],
               ['System stats',     'Users, devices, alerts'],
               ['Role breakdown',   'Per-role distribution'],
               ['Fleet health',     'Low-battery devices'],
             ].map(([term, desc]) => (
-              <div key={term}>
-                <dt className="font-semibold text-white">{term}</dt>
-                <dd className="text-white/70">{desc}</dd>
+              <div key={term as string} className="rounded-xl p-3"
+                style={{ background: 'rgba(255,255,255,0.14)' }}>
+                <dt className="text-xs font-semibold text-white">{term}</dt>
+                <dd className="mt-0.5 text-xs" style={{ color: 'rgba(255,255,255,0.65)' }}>{desc}</dd>
               </div>
             ))}
           </dl>
         </div>
+        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          Alehu Technologies PLC · Addis Ababa
+        </p>
       </div>
-      <div className="flex items-center justify-center p-8" style={{ background: 'var(--color-canvas)' }}>
+
+      {/* Right panel */}
+      <div className="flex items-center justify-center p-8"
+        style={{ background: 'var(--canvas)' }}>
         <div className="w-full max-w-md">
-          <Link href="/" className="text-sm text-rose">← Back to Alehu</Link>
-          <h1 className="mt-4 font-display text-4xl" style={{ color: 'var(--color-ink)' }}>Admin sign in</h1>
-          <p className="mt-2 text-sm opacity-60" style={{ color: 'var(--color-ink)' }}>
-            Demo: <code className="rounded bg-blush-soft px-1">admin@alehu.com</code> / <code className="rounded bg-blush-soft px-1">Admin123!</code>
+          <Link href="/" className="text-sm font-medium transition-colors hover:text-[var(--accent)]"
+            style={{ color: 'var(--ink-muted)' }}>
+            ← Alehu Technologies
+          </Link>
+          <h1 className="mt-6 font-display text-4xl" style={{ color: 'var(--ink)' }}>Admin sign in</h1>
+          <p className="mt-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+            Demo: <code className="rounded-lg px-1.5 py-0.5 text-xs font-mono"
+              style={{ background: 'var(--surface-2)', color: 'var(--ink)' }}>admin@alehu.com</code>
+            {' '}/ <code className="rounded-lg px-1.5 py-0.5 text-xs font-mono"
+              style={{ background: 'var(--surface-2)', color: 'var(--ink)' }}>Admin123!</code>
           </p>
           <LoginForm defaultEmail="admin@alehu.com" defaultPassword="Admin123!" />
         </div>

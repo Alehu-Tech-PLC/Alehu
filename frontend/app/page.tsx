@@ -1,202 +1,252 @@
 import Link from 'next/link';
 import { MarketingShell } from '@/components/MarketingShell';
+import { AlehuWatchHero } from '@/components/illustrations/AlehuWatchHero';
+import { ChildrenScene } from '@/components/illustrations/ChildrenScene';
+import { WearableLineup } from '@/components/illustrations/WearableLineup';
 import { site } from '@/lib/site';
-
-function PortalCard({
-  href,
-  title,
-  description,
-  badge,
-  badgeColour,
-}: {
-  href: string;
-  title: string;
-  description: string;
-  badge: string;
-  badgeColour: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col rounded-3xl bg-white p-6 shadow-card transition hover:-translate-y-1 hover:shadow-lg"
-    >
-      <span className={`self-start rounded-full px-3 py-1 text-xs font-semibold ${badgeColour}`}>
-        {badge}
-      </span>
-      <h3 className="mt-4 font-display text-2xl text-navy">{title}</h3>
-      <p className="mt-2 grow text-sm leading-6 text-ink/75">{description}</p>
-      <span className="mt-4 text-sm font-semibold text-teal group-hover:underline">
-        Sign in →
-      </span>
-    </Link>
-  );
-}
 
 const metrics = [
   { value: '<1.2s', label: 'Alert latency' },
-  { value: '99.4%', label: 'AI detection accuracy' },
-  { value: '24/7', label: 'Active protection' },
-  { value: '100%', label: 'Encrypted telemetry' },
+  { value: '99.4%', label: 'AI accuracy' },
+  { value: '24 / 7', label: 'Active protection' },
+  { value: '100%',  label: 'Encrypted telemetry' },
 ];
 
 const pillars = [
-  {
-    title: 'Proactive protection',
-    body: 'Shift from passive tracking to on-device threat assessment. The band listens for distress, impact, and route deviation locally.',
-  },
-  {
-    title: 'Privacy first',
-    body: 'Zero raw audio or image storage. Edge inference keeps a child’s world private while still reaching a guardian in time.',
-  },
-  {
-    title: 'Seamless utility',
-    body: 'Long battery life, water-resistant child-proof design, and a calm parent dashboard instead of a noisy surveillance feed.',
-  },
+  { title: 'Proactive protection',
+    body:  'Shift from passive tracking to on-device threat assessment. The band listens for distress, impact, and route deviation locally — no cloud required.' },
+  { title: 'Privacy first',
+    body:  'Zero raw audio or image storage. Edge inference keeps a child\'s world private while still reaching a guardian in time.' },
+  { title: 'Seamless utility',
+    body:  'Long battery life, water-resistant child-proof design, and a calm parent dashboard instead of a noisy surveillance feed.' },
 ];
 
-const modules = [
-  ['Distress Acoustic AI', 'Scream, impact, and keyword triggers stay on-device.'],
-  ['Smart geofencing', 'Wander-off warnings before a child is far from safety.'],
-  ['Fall & impact', 'IMU patterns raise an automated accident alert.'],
-  ['Silent SOS', 'Recessed double-press button for discreet emergencies.'],
+const portals = [
+  { href: '/parent/login',         title: 'Parent portal',
+    desc: "Live location, battery, and alerts for your child's Alehu band in one calm view.",
+    badge: 'For families' },
+  { href: '/police_officer/login', title: 'Officer portal',
+    desc: 'Critical alerts and SOS events with GPS coordinates ready for rapid dispatch.',
+    badge: 'Law enforcement' },
+  { href: '/admin/login',          title: 'Admin portal',
+    desc: 'Manage users, review fleet health, and maintain full platform visibility.',
+    badge: 'Alehu staff' },
 ];
 
 export default function HomePage() {
   const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: 'Alehu Band',
-    brand: site.legalName,
-    description: site.description,
-    category: 'Child safety wearable',
+    '@context': 'https://schema.org', '@type': 'Product',
+    name: 'Alehu Band', brand: site.legalName,
+    description: site.description, category: 'Child safety wearable',
   };
 
   return (
     <MarketingShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      {/* ══════════════════════════════════════════
+          HERO
+      ══════════════════════════════════════════ */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#0F7A6C33,transparent_42%),radial-gradient(circle_at_bottom_left,#E8A31722,transparent_40%)]" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 md:grid-cols-2 md:py-28">
+        {/* Radial glow */}
+        <div className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse 60% 60% at 80% 20%, var(--accent-bg), transparent 70%)' }} />
+
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
+          {/* Copy */}
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal">Smart child safety systems</p>
-            <h1 className="mt-4 font-display text-5xl leading-tight text-navy md:text-6xl">
-              Safety that protects freedom, not just location.
+            <p className="section-label">{site.legalName}</p>
+            <h1 className="mt-4 font-display text-5xl leading-[1.1] md:text-6xl" style={{ color: 'var(--ink)' }}>
+              Safety that protects freedom,{' '}
+              <span style={{ color: 'var(--accent)' }}>not just location.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-ink/80">
-              Alehu AI combines a non-intrusive wearable with edge intelligence so parents and schools get instant alerts — without turning childhood into a camera feed.
+            <p className="mt-6 max-w-lg text-lg leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
+              Alehu Technologies combines a non-intrusive wearable with edge AI so parents and
+              schools get instant alerts — without turning childhood into a camera feed.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/contact" className="rounded-full bg-navy px-6 py-3 font-semibold text-cream hover:bg-teal">
-                Start a school pilot
-              </Link>
-              <Link href="/product" className="rounded-full border border-navy/20 px-6 py-3 font-semibold text-navy">
-                See the gadget
-              </Link>
+              <Link href="/contact" className="btn px-7 py-3 text-base">Start a school pilot</Link>
+              <Link href="/product" className="btn-ghost px-7 py-3 text-base">See the gadget</Link>
             </div>
-          </div>
-          <div className="rounded-[2rem] bg-navy p-8 text-cream shadow-card">
-            <p className="text-sm uppercase tracking-widest text-amber">Live guardian view</p>
-            <p className="mt-4 font-display text-3xl">Maya is inside Sunshine Daycare.</p>
-            <div className="mt-6 grid gap-3">
-              {['Battery 86%', 'Safe zone: school', 'Last ping 12s ago', 'No distress audio'].map((item) => (
-                <div key={item} className="rounded-2xl bg-white/10 px-4 py-3 text-sm">
-                  {item}
+            {/* Metrics row */}
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {metrics.map((m) => (
+                <div key={m.label}>
+                  <p className="font-display text-2xl font-bold" style={{ color: 'var(--accent)' }}>{m.value}</p>
+                  <p className="mt-0.5 text-xs" style={{ color: 'var(--ink-muted)' }}>{m.label}</p>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Hero watch illustration */}
+          <div className="flex justify-center">
+            <AlehuWatchHero className="w-full max-w-xs drop-shadow-2xl md:max-w-sm" />
+          </div>
         </div>
       </section>
 
-      <section className="border-y border-navy/10 bg-white/50">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 py-10 md:grid-cols-4">
-          {metrics.map((metric) => (
-            <div key={metric.label}>
-              <p className="font-display text-3xl text-teal">{metric.value}</p>
-              <p className="mt-1 text-sm text-navy/70">{metric.label}</p>
+      {/* ══════════════════════════════════════════
+          CHILDREN SCENE — "Real families, real safety"
+      ══════════════════════════════════════════ */}
+      <section style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <div className="grid items-center gap-12 md:grid-cols-2">
+            <div>
+              <p className="section-label">Real families, real safety</p>
+              <h2 className="mt-4 font-display text-4xl" style={{ color: 'var(--ink)' }}>
+                Children protected.<br/>Parents at peace.
+              </h2>
+              <p className="mt-4 max-w-md text-base leading-relaxed" style={{ color: 'var(--ink-muted)' }}>
+                Whether at school, a daycare, or walking home — every Alehu band keeps a child
+                connected to the people who love them, without being intrusive.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  'On-device AI — no raw audio ever leaves the band',
+                  'Instant silent SOS for discreet emergencies',
+                  'Geofence alerts before a child wanders far',
+                  'Law-enforcement escalation in one tap',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-sm" style={{ color: 'var(--ink-muted)' }}>
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white text-xs font-bold"
+                      style={{ background: 'var(--accent)' }}>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
+            <ChildrenScene className="w-full max-w-md mx-auto" />
+          </div>
         </div>
       </section>
 
+      {/* ══════════════════════════════════════════
+          WEARABLE LINEUP
+      ══════════════════════════════════════════ */}
       <section className="mx-auto max-w-6xl px-4 py-20">
-        <h2 className="font-display text-4xl text-navy">An unbroken safety umbrella</h2>
-        <p className="mt-4 max-w-2xl text-ink/75">
-          Wearable sensors, localized edge computing, and a guardian app form one loop around children in urban, school, and outdoor environments.
+        <p className="section-label">Product roadmap</p>
+        <h2 className="mt-3 font-display text-4xl" style={{ color: 'var(--ink)' }}>
+          One platform. Every form factor.
+        </h2>
+        <p className="mt-4 max-w-2xl text-base" style={{ color: 'var(--ink-muted)' }}>
+          Phase 1 launches with the Alehu smart wristband. Future phases bring the same safety
+          intelligence to bracelets, necklace pendants, and rings — so every child finds a
+          comfortable fit.
         </p>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {pillars.map((pillar) => (
-            <article key={pillar.title} className="rounded-3xl bg-white p-6 shadow-card">
-              <h3 className="font-display text-2xl text-navy">{pillar.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-ink/75">{pillar.body}</p>
-            </article>
-          ))}
-        </div>
+        <WearableLineup className="mt-10 w-full" />
       </section>
 
-      <section className="bg-navy py-16 text-cream">
-        <div className="mx-auto max-w-6xl px-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber">On the band</p>
-          <h2 className="mt-3 font-display text-4xl">Quiet until it must speak.</h2>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {modules.map(([title, body]) => (
-              <article key={title} className="rounded-3xl bg-white/10 p-5">
-                <h3 className="font-display text-xl">{title}</h3>
-                <p className="mt-2 text-sm text-cream/80">{body}</p>
+      {/* ══════════════════════════════════════════
+          PILLARS
+      ══════════════════════════════════════════ */}
+      <section style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
+        <div className="mx-auto max-w-6xl px-4 py-20">
+          <p className="section-label">Why Alehu</p>
+          <h2 className="mt-3 font-display text-4xl" style={{ color: 'var(--ink)' }}>
+            An unbroken safety umbrella
+          </h2>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {pillars.map((p) => (
+              <article key={p.title} className="card p-7">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl"
+                  style={{ background: 'var(--accent-bg)' }}>
+                  <span style={{ color: 'var(--accent)', fontSize: 20 }}>
+                    {p.title === 'Proactive protection' ? '🛡️' : p.title === 'Privacy first' ? '🔒' : '⚡'}
+                  </span>
+                </div>
+                <h3 className="font-display text-xl" style={{ color: 'var(--ink)' }}>{p.title}</h3>
+                <p className="mt-3 text-sm leading-6" style={{ color: 'var(--ink-muted)' }}>{p.body}</p>
               </article>
             ))}
           </div>
-          <Link href="/hardware" className="mt-8 inline-flex rounded-full bg-amber px-5 py-3 text-sm font-semibold text-navy">
-            Hardware starting kit
-          </Link>
         </div>
       </section>
 
-      {/* ── Portal access cards ── */}
+      {/* ══════════════════════════════════════════
+          DARK BAND — modules
+      ══════════════════════════════════════════ */}
+      <section style={{ background: 'var(--ink)', color: '#fff' }} className="py-16">
+        <div className="mx-auto max-w-6xl px-4">
+          <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--accent)' }}>
+            On the band
+          </p>
+          <h2 className="mt-3 font-display text-4xl text-white">Quiet until it must speak.</h2>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['🎙️', 'Distress Acoustic AI', 'Scream & keyword triggers — entirely on-device.'],
+              ['📍', 'Smart Geofencing',     'Wander-off warnings before it is too late.'],
+              ['⬇️', 'Fall & Impact',        'IMU patterns raise an automated accident alert.'],
+              ['🆘', 'Silent SOS',           'Recessed double-press for discreet emergencies.'],
+            ].map(([icon, title, body]) => (
+              <article key={title as string} className="rounded-3xl p-5"
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)' }}>
+                <span className="text-2xl">{icon}</span>
+                <h3 className="mt-3 font-display text-lg text-white">{title as string}</h3>
+                <p className="mt-2 text-sm leading-5" style={{ color: 'rgba(255,255,255,0.60)' }}>{body as string}</p>
+              </article>
+            ))}
+          </div>
+          <Link href="/hardware" className="btn mt-8 inline-flex">Hardware starting kit →</Link>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════
+          PORTALS
+      ══════════════════════════════════════════ */}
       <section className="mx-auto max-w-6xl px-4 py-20">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal">Secure portals</p>
-        <h2 className="mt-3 font-display text-4xl text-navy">Access your dashboard</h2>
-        <p className="mt-4 max-w-2xl text-ink/75">
-          Every stakeholder has a dedicated, role-gated view — built for the tasks they actually perform.
+        <p className="section-label">Secure portals</p>
+        <h2 className="mt-3 font-display text-4xl" style={{ color: 'var(--ink)' }}>
+          Access your dashboard
+        </h2>
+        <p className="mt-4 max-w-2xl text-base" style={{ color: 'var(--ink-muted)' }}>
+          Every stakeholder has a dedicated, role-gated view built for their specific tasks.
         </p>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
-          <PortalCard
-            href="/parent/login"
-            title="Parent portal"
-            description="See your child's live location, battery level, and any open alerts from a single calm view."
-            badge="For families"
-            badgeColour="bg-teal/10 text-teal"
-          />
-          <PortalCard
-            href="/police_officer/login"
-            title="Officer portal"
-            description="Critical alerts and SOS events surface here first — with GPS coordinates ready for dispatch."
-            badge="For law enforcement"
-            badgeColour="bg-blue-600/10 text-blue-700"
-          />
-          <PortalCard
-            href="/admin/login"
-            title="Admin portal"
-            description="Manage users, review fleet health, and maintain full platform visibility."
-            badge="Alehu staff"
-            badgeColour="bg-amber-100 text-amber-700"
-          />
+          {portals.map((p) => (
+            <Link key={p.href} href={p.href}
+              className="card group flex flex-col p-6 transition-all hover:-translate-y-1"
+              style={{ boxShadow: '0 2px 16px var(--shadow)' }}>
+              <span className="badge self-start">{p.badge}</span>
+              <h3 className="mt-4 font-display text-2xl" style={{ color: 'var(--ink)' }}>{p.title}</h3>
+              <p className="mt-2 grow text-sm leading-6" style={{ color: 'var(--ink-muted)' }}>{p.desc}</p>
+              <span className="mt-5 text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+                Sign in →
+              </span>
+            </Link>
+          ))}
         </div>
       </section>
 
+      {/* ══════════════════════════════════════════
+          CTA BANNER
+      ══════════════════════════════════════════ */}
       <section className="mx-auto max-w-6xl px-4 pb-20">
-        <div className="rounded-[2rem] bg-teal-soft p-8 md:p-12">
-          <h2 className="font-display text-4xl text-navy">Ready for a careful school pilot?</h2>
-          <p className="mt-4 max-w-2xl text-ink/75">
-            We start with urban parents, primary schools, and daycare centers. Ten units, clear privacy rules, and a guardian dashboard your staff can actually use.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/contact" className="rounded-full bg-navy px-6 py-3 font-semibold text-cream">
-              Talk to the team
-            </Link>
-            <Link href="/how-it-works" className="rounded-full border border-navy/20 px-6 py-3 font-semibold text-navy">
-              See the safety loop
-            </Link>
+        <div className="overflow-hidden rounded-[2rem] px-8 py-12 md:px-14"
+          style={{ background: 'var(--accent)', position: 'relative' }}>
+          {/* Decorative circles */}
+          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.08)' }} />
+          <div className="pointer-events-none absolute -bottom-10 right-32 h-40 w-40 rounded-full"
+            style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <div className="relative">
+            <h2 className="font-display text-4xl text-white">Ready for a careful school pilot?</h2>
+            <p className="mt-4 max-w-2xl text-base" style={{ color: 'rgba(255,255,255,0.80)' }}>
+              We start with urban parents, primary schools, and daycare centers in Addis Ababa.
+              Ten units, clear privacy rules, and a guardian dashboard your staff can actually use.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/contact"
+                className="inline-flex items-center rounded-full px-7 py-3 text-sm font-semibold transition-all hover:opacity-90"
+                style={{ background: 'var(--ink)', color: '#fff' }}>
+                Talk to the team
+              </Link>
+              <Link href="/how-it-works"
+                className="inline-flex items-center rounded-full border px-7 py-3 text-sm font-semibold transition-all hover:bg-white/10"
+                style={{ borderColor: 'rgba(255,255,255,0.40)', color: '#fff' }}>
+                See the safety loop
+              </Link>
+            </div>
           </div>
         </div>
       </section>

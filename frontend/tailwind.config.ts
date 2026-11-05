@@ -1,5 +1,13 @@
 import type { Config } from 'tailwindcss';
 
+/**
+ * Alehu AI — two-color design system
+ *
+ * PRIMARY:   Rose  #E8637A  — accent, CTAs, active states, highlights
+ * BASE:      Midnight-scale — backgrounds, text, borders (near-blacks & warm whites)
+ *
+ * Zero teal / green / sage anywhere.
+ */
 const config: Config = {
   darkMode: 'class',
   content: [
@@ -9,61 +17,60 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── Brand neutrals ──────────────────────────────────────────
-        ink:   'var(--color-ink)',
-        canvas: 'var(--color-canvas)',
-        surface: 'var(--color-surface)',
-        border: 'var(--color-border)',
-
-        // ── Pinky-cream palette ──────────────────────────────────────
-        blush: {
-          DEFAULT: '#F2C4CE',   // warm pink
-          deep:    '#D4849A',   // dusty rose
-          soft:    '#FDF0F3',   // almost-white pink tint
-        },
-        plum: {
-          DEFAULT: '#5C2D4E',   // rich dark plum (replaces navy)
-          light:   '#7A3D69',
-          dark:    '#3D1A33',
-        },
+        // ── Single accent ────────────────────────────────────────────
         rose: {
-          DEFAULT: '#C9607A',   // vibrant rose accent
-          soft:    '#F7E2E7',
+          DEFAULT: '#E8637A',   // primary accent
+          dark:    '#C94D63',   // hover / pressed
+          light:   '#F2A0AE',   // disabled / muted accent
+          soft:    '#FDF0F2',   // tinted background (light mode)
+          dim:     'rgba(232,99,122,0.15)', // subtle tint on dark
         },
-        gold: {
-          DEFAULT: '#D4A04A',   // warm gold (replaces amber)
-          soft:    '#FDF3E0',
-        },
-        cream: {
-          DEFAULT: '#FDF6F0',   // warm cream base
-          dark:    '#F0E6DC',
-        },
-        coral: '#D64565',
-        sage:  '#7EB5A6',       // muted teal-green for success states
 
-        // ── Keep teal for backward compat (used in existing pages) ──
-        teal: {
-          DEFAULT: '#0F7A6C',
-          deep:    '#0A5C52',
-          soft:    '#E8F6F3',
+        // ── Midnight scale (base neutrals) ───────────────────────────
+        midnight: {
+          DEFAULT: '#0D0D0D',   // richest black
+          90:      '#1A1A1A',   // sidebar / dark surfaces
+          80:      '#2A2A2A',   // card bg on dark
+          70:      '#3D3D3D',   // borders on dark
+          60:      '#5C5C5C',   // muted text on dark
         },
-        // Legacy
-        navy:  '#5C2D4E',       // alias → plum
-        sand:  '#EFE7D8',
-        amber: '#D4A04A',       // alias → gold
+
+        // ── Warm whites (light mode) ─────────────────────────────────
+        parchment: '#FAF7F4',   // page bg
+        paper:     '#FFFFFF',   // card bg
+        mist:      '#F2EFEC',   // subtle tinted area
+        stone:     '#E8E4DF',   // borders, dividers
+
+        // ── Semantic (still no green — use rose/gold) ────────────────
+        gold:   '#D4943A',      // warning / info accent
+        crimson:'#C93040',      // destructive / critical only
+
+        // ── Legacy aliases so old classes don't break hard ───────────
+        // These remap old names to new palette values
+        navy:   '#0D0D0D',      // → midnight
+        ink:    '#1A1A1A',      // → midnight-90
+        cream:  '#FAF7F4',      // → parchment
+        sand:   '#F2EFEC',      // → mist
+        amber:  '#D4943A',      // → gold
+        coral:  '#C93040',      // → crimson
+        teal: {
+          DEFAULT: '#E8637A',   // !! remapped to rose — kills any leftover text-teal
+          soft:    '#FDF0F2',   // !! remapped to rose-soft
+          deep:    '#C94D63',   // !! remapped to rose-dark
+        },
+        sage:   '#E8637A',      // !! remapped to rose — kills text-sage
       },
+
       fontFamily: {
         sans:    ['var(--font-plus-jakarta)', 'system-ui', 'sans-serif'],
         display: ['var(--font-fraunces)', 'Georgia', 'serif'],
       },
+
       boxShadow: {
-        card:   '0 4px 24px rgba(92, 45, 78, 0.10)',
-        'card-dark': '0 4px 24px rgba(0, 0, 0, 0.35)',
-        glow:   '0 0 0 3px rgba(201, 96, 122, 0.25)',
-      },
-      backgroundImage: {
-        'gradient-radial-plum':
-          'radial-gradient(circle at top right, rgba(242,196,206,0.25), transparent 50%), radial-gradient(circle at bottom left, rgba(212,160,74,0.12), transparent 45%)',
+        card:      '0 2px 16px rgba(13,13,13,0.08)',
+        'card-lg': '0 8px 40px rgba(13,13,13,0.12)',
+        'card-dark': '0 4px 24px rgba(0,0,0,0.40)',
+        glow:      '0 0 0 3px rgba(232,99,122,0.30)',
       },
     },
   },

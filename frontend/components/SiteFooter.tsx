@@ -1,40 +1,62 @@
 import Link from 'next/link';
+import { BrandMark } from './BrandMark';
 import { site } from '@/lib/site';
+
+const explore = [
+  { href: '/product',      label: 'Product' },
+  { href: '/how-it-works', label: 'How it works' },
+  { href: '/hardware',     label: 'Hardware' },
+  { href: '/privacy',      label: 'Privacy' },
+  { href: '/about',        label: 'About' },
+];
 
 export function SiteFooter() {
   return (
-    <footer className="border-t" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3">
+    <footer style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-3">
+        {/* Brand */}
         <div>
-          <p className="font-display text-2xl" style={{ color: 'var(--color-ink)' }}>Alehu AI</p>
-          <p className="mt-3 max-w-sm text-sm opacity-70" style={{ color: 'var(--color-ink)' }}>
-            Next-generation child safety systems. Wearable sensors, on-device AI, and guardian peace of mind.
+          <BrandMark />
+          <p className="mt-3 max-w-xs text-sm leading-6" style={{ color: 'var(--ink-muted)' }}>
+            Next-generation child safety systems built in Addis Ababa. Wearable sensors, on-device AI, guardian peace of mind.
           </p>
         </div>
+
+        {/* Links */}
         <div>
-          <p className="text-sm font-semibold uppercase tracking-widest text-gold">Explore</p>
-          <div className="mt-3 grid gap-2 text-sm opacity-70" style={{ color: 'var(--color-ink)' }}>
-            {['/product', '/how-it-works', '/hardware', '/privacy', '/about'].map((href) => (
-              <Link key={href} href={href}
-                className="hover:opacity-100 hover:text-rose transition-all capitalize">
-                {href.replace('/', '').replace('-', ' ')}
+          <p className="section-label mb-4">Explore</p>
+          <div className="grid gap-2">
+            {explore.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="text-sm transition-colors hover:text-[var(--accent)]"
+                style={{ color: 'var(--ink-muted)' }}
+              >
+                {l.label}
               </Link>
             ))}
           </div>
         </div>
-        <div className="text-sm">
-          <p className="text-sm font-semibold uppercase tracking-widest text-gold">Contact</p>
-          <div className="mt-3 space-y-1 opacity-70" style={{ color: 'var(--color-ink)' }}>
+
+        {/* Contact */}
+        <div>
+          <p className="section-label mb-4">Contact</p>
+          <div className="grid gap-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
             <p>{site.city}</p>
             <p>{site.email}</p>
             <p>{site.partnerships}</p>
+            <p>{site.investors}</p>
           </div>
         </div>
       </div>
-      <p className="border-t px-4 py-4 text-center text-xs opacity-50"
-        style={{ borderColor: 'var(--color-border)', color: 'var(--color-ink)' }}>
-        © {new Date().getFullYear()} {site.legalName}. Confidential product materials.
-      </p>
+
+      <div
+        className="border-t px-4 py-5 text-center text-xs"
+        style={{ borderColor: 'var(--border)', color: 'var(--ink-muted)' }}
+      >
+        © {new Date().getFullYear()} <span style={{ color: 'var(--ink)' }} className="font-semibold">{site.legalName}</span>. All rights reserved.
+      </div>
     </footer>
   );
 }

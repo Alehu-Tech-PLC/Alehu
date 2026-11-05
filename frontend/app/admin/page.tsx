@@ -7,176 +7,204 @@ import { apiBase } from '@/lib/site';
 
 const nav = [{ href: '/admin', label: 'System Overview' }];
 
-type AlertRow  = { id: number; alert_type: string; severity: string; message: string; acknowledged: boolean; created_at: string; };
-type DeviceRow = { id: number; name: string; serial_number: string; status: string; battery_level: number | null; last_seen: string | null; };
+type AlertRow  = { id: number; alert_type: string; severity: string; message: string; acknowledged: boolean; created_at: string };
+type DeviceRow = { id: number; name: string; serial_number: string; status: string; battery_level: number | null };
+type UserRow   = { id: number; username: string; email: string; role: string | null; is_active: boolean };
 type AdminSummary = {
-  counts: { total_users: number; active_users: number; total_devices: number; online_devices: number; total_customers: number; open_alerts: number; critical_alerts: number; total_alerts: number; };
+  counts: { total_users: number; active_users: number; total_devices: number; online_devices: number; total_customers: number; open_alerts: number; critical_alerts: number; total_alerts: number };
   role_distribution: Record<string, number>;
   recent_alerts: AlertRow[];
   low_battery_devices: DeviceRow[];
   recent_devices: DeviceRow[];
 };
 
-function severityBadge(s: string) {
-  if (s === 'critical') return 'bg-rose-soft text-coral dark:bg-plum-dark/60';
-  if (s === 'warning')  return 'bg-gold-soft text-gold dark:bg-plum-dark/60';
-  return 'opacity-60';
-}
-
 function getToken() {
   if (typeof window === 'undefined') return null;
-  return window.localStorage.getItem('alehu_access_token');
+  return localStorage.getItem('alehu_access_token');
 }
 
 export default function AdminDashboard() {
   const [data, setData]             = useState<AdminSummary | null>(null);
   const [error, setError]           = useState('');
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [users, setUsers]           = useState<UserRow[]>([]);
+  const [search, setSearch]         = useState('');
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
-  function load() {
+  function loadSummary() {
     api<AdminSummary>('/dashboard/admin/summary')
-      .then((res) => setData(res.data))
-      .catch((err) => setError(err.message));
+      .then((r) => setData(r.data))
+      .catch((e) => setError(e.message));
   }
-  useEffect(() => { load(); }, []);
+
+  function loadUsers() {
+    setLoadingUsers(true);
+    const q = search ? `?search=${encodeURIComponent(search)}` : '';
+    api<{ users: UserRow[] }>(`/dashboard/admin/users${q}`)
+      .then((r) => setUsers(r.data.users))
+      .catch(() => {})
+      .finally(() => setLoadingUsers(false));
+  }
+
+  useEffect(() => { loadSummary(); }, []);
+  useEffect(() => { loadUsers(); }, [search]);
 
   async function toggleActive(userId: number) {
     setTogglingId(userId);
     try {
-      const token = getToken();
       await fetch(`${apiBase}/dashboard/admin/users/${userId}/toggle-active`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}) },
       });
-      load();
+      loadSummary(); loadUsers();
     } catch { setError('Failed to toggle user status'); }
     finally { setTogglingId(null); }
   }
 
-  const counts = data?.counts;
+  const c = data?.counts;
 
   return (
-    <RoleDashboardShell
-      requiredRole="admin"
-      portalLabel="Admin portal"
-      accentBg="bg-gold"
-      nav={nav}
-      loginPath="/admin/login"
-    >
-      <h1 className="font-display text-4xl" style={{ color: 'var(--color-ink)' }}>System overview</h1>
-      <p className="mt-1 text-sm opacity-60" style={{ color: 'var(--color-ink)' }}>
-        Full visibility across all users, devices, and alerts.
-      </p>
+    <RoleDashboardShell requiredRole="admin" portalLabel="Admin portal" nav={nav} loginPath="/admin/login">
+      <div>
+        <h1 className="font-display text-3xl font-bold" style={{ color: 'var(--ink)' }}>System overview</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--ink-muted)' }}>
+          Full visibility across all users, devices, and alerts.
+        </p>
+      </div>
 
       {error && (
-        <p className="mt-4 rounded-2xl bg-rose-soft px-4 py-3 text-sm text-coral">{error}</p>
+        <div className="mt-4 flex items-center gap-3 rounded-2xl px-4 py-3 text-sm"
+          style={{ background: 'var(--danger-bg)', color: 'var(--danger)', border: '1px solid rgba(192,40,56,0.20)' }}>
+          ⚠️ {error}
+        </div>
       )}
 
       {/* Primary tiles */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Total users',    value: counts?.total_users    ?? '—' },
-          { label: 'Active users',   value: counts?.active_users   ?? '—' },
-          { label: 'Total devices',  value: counts?.total_devices  ?? '—' },
-          { label: 'Online devices', value: counts?.online_devices ?? '—' },
-        ].map(({ label, value }) => (
-          <article key={label} className="card p-5">
-            <p className="text-sm opacity-60" style={{ color: 'var(--color-ink)' }}>{label}</p>
-            <p className="mt-2 font-display text-3xl" style={{ color: 'var(--color-ink)' }}>{value}</p>
+          { label: 'Total users',    value: c?.total_users    ?? '—', icon: '👥' },
+          { label: 'Active users',   value: c?.active_users   ?? '—', icon: '✅' },
+          { label: 'Total devices',  value: c?.total_devices  ?? '—', icon: '⌚' },
+          { label: 'Online devices', value: c?.online_devices ?? '—', icon: '🟢' },
+        ].map(({ label, value, icon }) => (
+          <article key={label} className="stat-tile">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>{label}</p>
+              <span className="text-base">{icon}</span>
+            </div>
+            <p className="mt-2 font-display text-3xl font-bold" style={{ color: 'var(--ink)' }}>{value}</p>
           </article>
         ))}
       </div>
+
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Guardian orgs',   value: counts?.total_customers ?? '—' },
-          { label: 'Open alerts',     value: counts?.open_alerts     ?? '—' },
-          { label: 'Critical alerts', value: counts?.critical_alerts ?? '—' },
-          { label: 'Total alerts',    value: counts?.total_alerts    ?? '—' },
-        ].map(({ label, value }) => (
-          <article key={label} className="card p-5">
-            <p className="text-sm opacity-60" style={{ color: 'var(--color-ink)' }}>{label}</p>
-            <p className="mt-2 font-display text-3xl" style={{ color: 'var(--color-ink)' }}>{value}</p>
+          { label: 'Guardian orgs',   value: c?.total_customers ?? '—', icon: '🏫' },
+          { label: 'Open alerts',     value: c?.open_alerts     ?? '—', icon: '🔔' },
+          { label: 'Critical alerts', value: c?.critical_alerts ?? '—', icon: '🚨', hot: true },
+          { label: 'Total alerts',    value: c?.total_alerts    ?? '—', icon: '📊' },
+        ].map(({ label, value, icon, hot }) => (
+          <article key={label} className="stat-tile"
+            style={hot && value !== '—' && value !== 0
+              ? { background: 'var(--danger-bg)', borderColor: 'rgba(192,40,56,0.25)' } : {}}>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium" style={{ color: 'var(--ink-muted)' }}>{label}</p>
+              <span className="text-base">{icon}</span>
+            </div>
+            <p className="mt-2 font-display text-3xl font-bold"
+              style={{ color: hot && value !== '—' && value !== 0 ? 'var(--danger)' : 'var(--ink)' }}>
+              {value}
+            </p>
           </article>
         ))}
       </div>
 
       {/* Role distribution */}
       {data?.role_distribution && (
-        <section className="card mt-6 p-6">
-          <h2 className="font-display text-xl" style={{ color: 'var(--color-ink)' }}>Role distribution</h2>
-          <div className="mt-4 flex flex-wrap gap-3">
+        <section className="card mt-5 p-5">
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--ink-muted)' }}>
+            Role distribution
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
             {Object.entries(data.role_distribution).map(([role, count]) => (
-              <div key={role} className="rounded-2xl bg-blush-soft dark:bg-plum-dark/40 px-4 py-2 text-sm">
-                <span className="font-semibold capitalize" style={{ color: 'var(--color-ink)' }}>
+              <div key={role} className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm"
+                style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+                <span className="font-medium capitalize" style={{ color: 'var(--ink)' }}>
                   {role.replace('_', ' ')}
                 </span>
-                <span className="ml-2 opacity-60" style={{ color: 'var(--color-ink)' }}>{count}</span>
+                <span className="font-bold" style={{ color: 'var(--accent)' }}>{count}</span>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
         {/* Recent alerts */}
         <section className="card p-6">
-          <h2 className="font-display text-2xl" style={{ color: 'var(--color-ink)' }}>Recent alerts</h2>
-          {!data?.recent_alerts?.length && (
-            <p className="mt-4 text-sm opacity-50" style={{ color: 'var(--color-ink)' }}>No alerts yet.</p>
-          )}
-          <ul className="mt-4 space-y-3">
-            {(data?.recent_alerts ?? []).map((alert) => (
-              <li key={alert.id} className="rounded-2xl bg-blush-soft dark:bg-plum-dark/40 px-4 py-3 text-sm">
+          <h2 className="font-display text-xl font-semibold" style={{ color: 'var(--ink)' }}>Recent alerts</h2>
+          <ul className="mt-4 space-y-2">
+            {(data?.recent_alerts ?? []).map((a) => (
+              <li key={a.id} className="rounded-2xl px-4 py-3 text-sm"
+                style={{ background: 'var(--surface-2)' }}>
                 <div className="flex items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${severityBadge(alert.severity)}`}>
-                    {alert.severity}
+                  <span>{a.severity === 'critical' ? '🚨' : a.severity === 'warning' ? '⚠️' : 'ℹ️'}</span>
+                  <span className="font-semibold capitalize"
+                    style={{ color: a.severity === 'critical' ? 'var(--danger)' : a.severity === 'warning' ? 'var(--warn)' : 'var(--ink-muted)' }}>
+                    {a.severity}
                   </span>
-                  <span className="text-xs font-medium uppercase opacity-50" style={{ color: 'var(--color-ink)' }}>
-                    {alert.alert_type}
-                  </span>
-                  {alert.acknowledged && (
-                    <span className="ml-auto text-xs opacity-40" style={{ color: 'var(--color-ink)' }}>acknowledged</span>
-                  )}
+                  <span className="text-xs font-medium uppercase" style={{ color: 'var(--ink-muted)' }}>{a.alert_type}</span>
+                  {a.acknowledged && <span className="ml-auto text-xs" style={{ color: 'var(--ink-muted)' }}>✓ acknowledged</span>}
                 </div>
-                <p className="mt-1" style={{ color: 'var(--color-ink)' }}>{alert.message}</p>
-                <p className="mt-1 text-xs opacity-40" style={{ color: 'var(--color-ink)' }}>
-                  {new Date(alert.created_at).toLocaleString()}
+                <p className="mt-1" style={{ color: 'var(--ink)' }}>{a.message}</p>
+                <p className="mt-0.5 text-xs" style={{ color: 'var(--ink-muted)' }}>
+                  {new Date(a.created_at).toLocaleString()}
                 </p>
               </li>
             ))}
+            {!data?.recent_alerts?.length && (
+              <li className="text-sm" style={{ color: 'var(--ink-muted)' }}>No alerts yet.</li>
+            )}
           </ul>
         </section>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-5">
           {/* Low battery */}
           <section className="card p-6">
-            <h2 className="font-display text-xl" style={{ color: 'var(--color-ink)' }}>Low battery (≤20%)</h2>
+            <h2 className="font-display text-xl font-semibold" style={{ color: 'var(--ink)' }}>
+              Low battery <span style={{ color: 'var(--ink-muted)', fontSize: 14 }}>(≤ 20%)</span>
+            </h2>
             {!data?.low_battery_devices?.length ? (
-              <p className="mt-4 text-sm opacity-50" style={{ color: 'var(--color-ink)' }}>All devices charged.</p>
+              <p className="mt-3 flex items-center gap-2 text-sm" style={{ color: 'var(--ink-muted)' }}>
+                🔋 All devices charged.
+              </p>
             ) : (
-              <ul className="mt-4 space-y-2 text-sm">
-                {data.low_battery_devices.map((device) => (
-                  <li key={device.id}
-                    className="flex items-center justify-between rounded-2xl bg-rose-soft dark:bg-plum-dark/60 px-4 py-2">
-                    <span className="font-medium" style={{ color: 'var(--color-ink)' }}>{device.name}</span>
-                    <span className="font-semibold text-coral">{device.battery_level}%</span>
+              <ul className="mt-4 space-y-2">
+                {data.low_battery_devices.map((d) => (
+                  <li key={d.id} className="flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm"
+                    style={{ background: 'var(--danger-bg)', border: '1px solid rgba(192,40,56,0.15)' }}>
+                    <span style={{ color: 'var(--ink)' }}>⌚ {d.name}</span>
+                    <span className="font-bold" style={{ color: 'var(--danger)' }}>{d.battery_level}%</span>
                   </li>
                 ))}
               </ul>
             )}
           </section>
 
-          {/* Recent devices */}
+          {/* Recently seen */}
           <section className="card p-6">
-            <h2 className="font-display text-xl" style={{ color: 'var(--color-ink)' }}>Recently seen</h2>
-            <ul className="mt-4 space-y-2 text-sm">
-              {(data?.recent_devices ?? []).map((device) => (
-                <li key={device.id}
-                  className="flex items-center justify-between rounded-2xl bg-blush-soft dark:bg-plum-dark/40 px-4 py-2">
-                  <span className="font-medium" style={{ color: 'var(--color-ink)' }}>{device.name}</span>
-                  <span className={`text-xs ${device.status === 'active' ? 'text-sage' : 'opacity-40'}`}
-                    style={device.status !== 'active' ? { color: 'var(--color-ink)' } : {}}>
-                    {device.status}
+            <h2 className="font-display text-xl font-semibold" style={{ color: 'var(--ink)' }}>Recently seen</h2>
+            <ul className="mt-4 space-y-2">
+              {(data?.recent_devices ?? []).map((d) => (
+                <li key={d.id} className="flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm"
+                  style={{ background: 'var(--surface-2)' }}>
+                  <span style={{ color: 'var(--ink)' }}>⌚ {d.name}</span>
+                  <span className="rounded-full px-2 py-0.5 text-xs font-semibold"
+                    style={{
+                      background: d.status === 'active' ? 'var(--accent-bg)' : 'var(--surface-2)',
+                      color: d.status === 'active' ? 'var(--accent-txt)' : 'var(--ink-muted)',
+                    }}>
+                    {d.status}
                   </span>
                 </li>
               ))}
@@ -186,88 +214,62 @@ export default function AdminDashboard() {
       </div>
 
       {/* Users table */}
-      <section className="card mt-6 p-6">
-        <h2 className="font-display text-2xl" style={{ color: 'var(--color-ink)' }}>System users</h2>
-        <p className="mt-1 text-sm opacity-60" style={{ color: 'var(--color-ink)' }}>
-          Activate or deactivate accounts below.
-        </p>
-        <UsersTable onToggle={toggleActive} togglingId={togglingId} />
+      <section className="card mt-5 p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl font-semibold" style={{ color: 'var(--ink)' }}>System users</h2>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or email…"
+            className="input w-64 py-2 text-xs"
+          />
+        </div>
+        {loadingUsers ? (
+          <p className="mt-4 text-sm" style={{ color: 'var(--ink-muted)' }}>Loading…</p>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  {['Username', 'Email', 'Role', 'Status', 'Action'].map((h) => (
+                    <th key={h} className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: 'var(--ink-muted)' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td className="py-2.5 pr-4 font-medium" style={{ color: 'var(--ink)' }}>{u.username}</td>
+                    <td className="py-2.5 pr-4" style={{ color: 'var(--ink-muted)' }}>{u.email}</td>
+                    <td className="py-2.5 pr-4">
+                      <span className="badge-muted badge capitalize">{u.role?.replace('_', ' ') ?? '—'}</span>
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      <span className={u.is_active ? 'badge' : 'badge-danger badge'}>
+                        {u.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="py-2.5">
+                      <button onClick={() => toggleActive(u.id)} disabled={togglingId === u.id}
+                        className="btn-ghost px-3 py-1 text-xs">
+                        {togglingId === u.id ? '…' : u.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {!users.length && (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-sm" style={{ color: 'var(--ink-muted)' }}>
+                      No users found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </RoleDashboardShell>
-  );
-}
-
-/* ── Users sub-component ── */
-function UsersTable({ onToggle, togglingId }: { onToggle: (id: number) => void; togglingId: number | null }) {
-  type UserRow = { id: number; username: string; email: string; role: string | null; is_active: boolean; created_at: string; };
-  const [users, setUsers]     = useState<UserRow[]>([]);
-  const [search, setSearch]   = useState('');
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    const q = search ? `?search=${encodeURIComponent(search)}` : '';
-    api<{ users: UserRow[]; pagination: unknown }>(`/dashboard/admin/users${q}`)
-      .then((res) => setUsers(res.data.users))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [search]);
-
-  return (
-    <>
-      <div className="mt-4">
-        <input value={search} onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or email…"
-          className="w-full max-w-xs rounded-2xl border px-4 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-rose/40"
-          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', color: 'var(--color-ink)' }} />
-      </div>
-      {loading ? (
-        <p className="mt-4 text-sm opacity-50" style={{ color: 'var(--color-ink)' }}>Loading…</p>
-      ) : (
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left opacity-50" style={{ borderColor: 'var(--color-border)', color: 'var(--color-ink)' }}>
-                {['Username', 'Email', 'Role', 'Status', 'Action'].map((h) => (
-                  <th key={h} className="pb-2 pr-4 font-medium">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <td className="py-2 pr-4 font-medium" style={{ color: 'var(--color-ink)' }}>{user.username}</td>
-                  <td className="py-2 pr-4 opacity-70" style={{ color: 'var(--color-ink)' }}>{user.email}</td>
-                  <td className="py-2 pr-4">
-                    <span className="rounded-full bg-blush-soft dark:bg-plum-dark/40 px-2 py-0.5 text-xs capitalize"
-                      style={{ color: 'var(--color-ink)' }}>
-                      {user.role?.replace('_', ' ') ?? '—'}
-                    </span>
-                  </td>
-                  <td className="py-2 pr-4">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${user.is_active ? 'bg-sage/20 text-sage' : 'bg-rose-soft text-coral'}`}>
-                      {user.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="py-2">
-                    <button onClick={() => onToggle(user.id)} disabled={togglingId === user.id}
-                      className="btn-ghost px-3 py-1 text-xs disabled:opacity-50">
-                      {togglingId === user.id ? '…' : user.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {!users.length && (
-                <tr>
-                  <td colSpan={5} className="py-6 text-center opacity-40" style={{ color: 'var(--color-ink)' }}>
-                    No users found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
   );
 }

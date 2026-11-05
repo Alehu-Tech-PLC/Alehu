@@ -1,6 +1,6 @@
 export const site = {
-  name: 'Alehu AI',
-  legalName: 'Alehu AI Public Limited Company',
+  name: 'Alehu Technologies',
+  legalName: 'Alehu Technologies PLC',
   tagline: 'Smart child safety systems',
   description:
     'Alehu AI protects children with a non-intrusive wearable, on-device edge AI, and instant guardian alerts. Privacy-first safety for homes, schools, and cities.',
