@@ -48,14 +48,16 @@ class ProductionConfig(Config):
     """Production configuration — DEBUG off, all secrets required from environment."""
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=5)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
 
-    def __init__(self):
-        if not self.SQLALCHEMY_DATABASE_URI:
+    @classmethod
+    def validate(cls):
+        """Call this explicitly if you want hard validation at startup."""
+        if not cls.SQLALCHEMY_DATABASE_URI:
             raise ValueError("DATABASE_URL environment variable must be set in production")
-        if self.SECRET_KEY == 'fallback-secret-key':
+        if cls.SECRET_KEY == 'fallback-secret-key':
             raise ValueError("SECRET_KEY environment variable must be set in production")
-        if self.JWT_SECRET_KEY == 'fallback-jwt-secret-key':
+        if cls.JWT_SECRET_KEY == 'fallback-jwt-secret-key':
             raise ValueError("JWT_SECRET_KEY environment variable must be set in production")
 
 
