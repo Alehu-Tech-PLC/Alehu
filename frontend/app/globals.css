@@ -2,19 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Light mode tokens ─────────────────────────────────────────────────── */
 :root {
   color-scheme: light;
+
+  --color-ink:     #3D1A33;        /* dark plum text */
+  --color-canvas:  #FDF6F0;        /* warm cream page bg */
+  --color-surface: #FFFFFF;        /* card bg */
+  --color-border:  rgba(92,45,78,0.12);
+
+  /* accent shortcuts used in components */
+  --color-accent:  #C9607A;        /* rose */
+  --color-accent2: #D4A04A;        /* gold */
 }
 
+/* ── Dark mode tokens ──────────────────────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  --color-ink:     #F2C4CE;        /* blush text on dark */
+  --color-canvas:  #1E0F1A;        /* very dark plum bg */
+  --color-surface: #2B1426;        /* card bg */
+  --color-border:  rgba(242,196,206,0.12);
+
+  --color-accent:  #E8849A;        /* lighter rose on dark */
+  --color-accent2: #E8B96A;        /* lighter gold on dark */
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-cream text-ink antialiased;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  @apply antialiased font-sans;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* ── Selection ─────────────────────────────────────────────────────────── */
 ::selection {
-  background: #0F7A6C;
+  background: #C9607A;
   color: #fff;
+}
+
+/* ── Scrollbar (webkit) ────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(92, 45, 78, 0.25);
+  border-radius: 99px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(242, 196, 206, 0.2);
+}
+
+/* ── Utility: token-aware card ─────────────────────────────────────────── */
+@layer components {
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    @apply rounded-3xl shadow-card;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-primary {
+    background-color: var(--color-accent);
+    @apply rounded-full px-6 py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply rounded-full border px-6 py-3 font-semibold transition hover:bg-blush-soft;
+    border-color: var(--color-border);
+    color: var(--color-ink);
+  }
 }

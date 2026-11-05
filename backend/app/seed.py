@@ -38,8 +38,10 @@ def seed_db(app):
 # ---------------------------------------------------------------------------
 def _seed_roles():
     roles_data = [
-        {"name": "admin", "description": "Administrator role"},
-        {"name": "user",  "description": "Regular user role"},
+        {"name": "admin",          "description": "Alehu system administrator"},
+        {"name": "user",           "description": "Regular user role"},
+        {"name": "parent",         "description": "Parent / guardian of a child wearing an Alehu band"},
+        {"name": "police_officer", "description": "Law-enforcement officer with incident response access"},
     ]
     for data in roles_data:
         if not Role.query.filter_by(name=data["name"]).first():
@@ -74,6 +76,36 @@ def _seed_permissions():
             "resource": "devices",
             "action": "manage",
         },
+        {
+            "name": "alerts:read",
+            "description": "Read alerts",
+            "resource": "alerts",
+            "action": "read",
+        },
+        {
+            "name": "alerts:respond",
+            "description": "Acknowledge and respond to alerts",
+            "resource": "alerts",
+            "action": "respond",
+        },
+        {
+            "name": "dashboard:parent",
+            "description": "Access parent dashboard",
+            "resource": "dashboard",
+            "action": "parent",
+        },
+        {
+            "name": "dashboard:police",
+            "description": "Access police-officer dashboard",
+            "resource": "dashboard",
+            "action": "police",
+        },
+        {
+            "name": "dashboard:admin",
+            "description": "Access admin dashboard",
+            "resource": "dashboard",
+            "action": "admin",
+        },
     ]
     for data in permissions_data:
         if not Permission.query.filter_by(name=data["name"]).first():
@@ -94,27 +126,42 @@ def _seed_permissions():
 # Role ↔ Permission assignments
 # ---------------------------------------------------------------------------
 def _seed_role_permissions():
-    admin_role = Role.query.filter_by(name="admin").first()
-    user_role  = Role.query.filter_by(name="user").first()
+    admin_role   = Role.query.filter_by(name="admin").first()
+    user_role    = Role.query.filter_by(name="user").first()
+    parent_role  = Role.query.filter_by(name="parent").first()
+    police_role  = Role.query.filter_by(name="police_officer").first()
 
-    perm_users_read   = Permission.query.filter_by(name="users:read").first()
-    perm_users_write  = Permission.query.filter_by(name="users:write").first()
-    perm_devices_mgmt = Permission.query.filter_by(name="devices:manage").first()
+    perm_users_read     = Permission.query.filter_by(name="users:read").first()
+    perm_users_write    = Permission.query.filter_by(name="users:write").first()
+    perm_devices_mgmt   = Permission.query.filter_by(name="devices:manage").first()
+    perm_alerts_read    = Permission.query.filter_by(name="alerts:read").first()
+    perm_alerts_respond = Permission.query.filter_by(name="alerts:respond").first()
+    perm_dash_parent    = Permission.query.filter_by(name="dashboard:parent").first()
+    perm_dash_police    = Permission.query.filter_by(name="dashboard:police").first()
+    perm_dash_admin     = Permission.query.filter_by(name="dashboard:admin").first()
 
-    # admin gets all 3 permissions
-    for perm in [perm_users_read, perm_users_write, perm_devices_mgmt]:
-        if perm and perm not in admin_role.permissions:
-            admin_role.permissions.append(perm)
-            print(f"  + Assigned '{perm.name}' → admin role")
-        elif perm:
-            print(f"  ~ Permission '{perm.name}' already assigned to admin")
+    def _assign(role, perms):
+        for perm in perms:
+            if perm and perm not in role.permissions:
+                role.permissions.append(perm)
+                print(f"  + Assigned '{perm.name}' → {role.name}")
+            elif perm:
+                print(f"  ~ '{perm.name}' already assigned to {role.name}")
 
-    # user role gets users:read only
-    if perm_users_read and perm_users_read not in user_role.permissions:
-        user_role.permissions.append(perm_users_read)
-        print("  + Assigned 'users:read' → user role")
-    elif perm_users_read:
-        print("  ~ Permission 'users:read' already assigned to user")
+    # admin: everything
+    _assign(admin_role, [
+        perm_users_read, perm_users_write, perm_devices_mgmt,
+        perm_alerts_read, perm_alerts_respond, perm_dash_admin,
+    ])
+
+    # user: read-only
+    _assign(user_role, [perm_users_read, perm_alerts_read])
+
+    # parent: own device data + alerts
+    _assign(parent_role, [perm_alerts_read, perm_dash_parent])
+
+    # police_officer: critical alerts + incident response
+    _assign(police_role, [perm_alerts_read, perm_alerts_respond, perm_dash_police])
 
     db.session.flush()
 
@@ -123,8 +170,10 @@ def _seed_role_permissions():
 # Users
 # ---------------------------------------------------------------------------
 def _seed_users():
-    admin_role = Role.query.filter_by(name="admin").first()
-    user_role  = Role.query.filter_by(name="user").first()
+    admin_role   = Role.query.filter_by(name="admin").first()
+    user_role    = Role.query.filter_by(name="user").first()
+    parent_role  = Role.query.filter_by(name="parent").first()
+    police_role  = Role.query.filter_by(name="police_officer").first()
 
     users_data = [
         {
@@ -138,6 +187,18 @@ def _seed_users():
             "email": "john@alehu.com",
             "password": "User123!",
             "role": user_role,
+        },
+        {
+            "username": "parent_demo",
+            "email": "parent@alehu.com",
+            "password": "Parent123!",
+            "role": parent_role,
+        },
+        {
+            "username": "officer_demo",
+            "email": "officer@alehu.com",
+            "password": "Officer123!",
+            "role": police_role,
         },
     ]
     for data in users_data:
@@ -161,18 +222,40 @@ def _seed_users():
 # ---------------------------------------------------------------------------
 def _seed_customers():
     admin_user = User.query.filter_by(email="admin@alehu.com").first()
+    parent_user = User.query.filter_by(email="parent@alehu.com").first()
 
     customers_data = [
-        {"name": "Sunshine Daycare", "email": "hello@sunshinedaycare.et", "phone": "+251911000111"},
-        {"name": "Greenfield Primary", "email": "office@greenfield.et", "phone": "+251911000222"},
-        {"name": "Addis Guardian Circle", "email": "parents@guardiancircle.et", "phone": "+251911000333"},
+        {
+            "name": "Sunshine Daycare",
+            "email": "hello@sunshinedaycare.et",
+            "phone": "+251911000111",
+            "user": admin_user,
+        },
+        {
+            "name": "Greenfield Primary",
+            "email": "office@greenfield.et",
+            "phone": "+251911000222",
+            "user": admin_user,
+        },
+        {
+            "name": "Addis Guardian Circle",
+            "email": "parents@guardiancircle.et",
+            "phone": "+251911000333",
+            "user": admin_user,
+        },
+        {
+            "name": "Sara Tesfaye (Parent)",
+            "email": "sara@family.et",
+            "phone": "+251912000444",
+            "user": parent_user,
+        },
     ]
     for data in customers_data:
         if not Customer.query.filter_by(email=data["email"]).first():
             customer = Customer(
                 name=data["name"],
                 email=data["email"],
-                user=admin_user,
+                user=data["user"],
             )
             db.session.add(customer)
             print(f"  + Customer: {data['name']}")
@@ -185,11 +268,13 @@ def _seed_customers():
 # Devices
 # ---------------------------------------------------------------------------
 def _seed_devices():
-    admin_user = User.query.filter_by(email="admin@alehu.com").first()
+    admin_user  = User.query.filter_by(email="admin@alehu.com").first()
+    parent_user = User.query.filter_by(email="parent@alehu.com").first()
 
     daycare = Customer.query.filter_by(name="Sunshine Daycare").first()
-    school = Customer.query.filter_by(name="Greenfield Primary").first()
-    circle = Customer.query.filter_by(name="Addis Guardian Circle").first()
+    school  = Customer.query.filter_by(name="Greenfield Primary").first()
+    circle  = Customer.query.filter_by(name="Addis Guardian Circle").first()
+    sara    = Customer.query.filter_by(name="Sara Tesfaye (Parent)").first()
 
     devices_data = [
         {
@@ -197,6 +282,7 @@ def _seed_devices():
             "serial_number": "ALH-BAND-001",
             "device_type": "wearable",
             "customer": daycare,
+            "user": admin_user,
             "battery_level": 86,
             "last_latitude": 9.0108,
             "last_longitude": 38.7613,
@@ -207,6 +293,7 @@ def _seed_devices():
             "serial_number": "ALH-BAND-002",
             "device_type": "wearable",
             "customer": school,
+            "user": admin_user,
             "battery_level": 42,
             "last_latitude": 9.0227,
             "last_longitude": 38.7469,
@@ -217,6 +304,7 @@ def _seed_devices():
             "serial_number": "ALH-BAND-003",
             "device_type": "wearable",
             "customer": circle,
+            "user": admin_user,
             "battery_level": 97,
             "last_latitude": 8.9806,
             "last_longitude": 38.7578,
@@ -227,9 +315,21 @@ def _seed_devices():
             "serial_number": "ALH-BAND-004",
             "device_type": "wearable",
             "customer": daycare,
+            "user": admin_user,
             "battery_level": 18,
             "last_latitude": 9.0054,
             "last_longitude": 38.7636,
+            "firmware_version": "1.0.4",
+        },
+        {
+            "name": "Alehu Band — Liya",
+            "serial_number": "ALH-BAND-005",
+            "device_type": "wearable",
+            "customer": sara,
+            "user": parent_user,
+            "battery_level": 74,
+            "last_latitude": 9.0152,
+            "last_longitude": 38.7621,
             "firmware_version": "1.0.4",
         },
     ]
@@ -240,7 +340,7 @@ def _seed_devices():
                 serial_number=data["serial_number"],
                 device_type=data["device_type"],
                 customer=data["customer"],
-                user=admin_user,
+                user=data["user"],
                 status="active",
                 battery_level=data["battery_level"],
                 last_latitude=data["last_latitude"],
@@ -255,9 +355,11 @@ def _seed_devices():
 
 
 def _seed_alerts():
-    maya = Device.query.filter_by(serial_number="ALH-BAND-001").first()
-    noah = Device.query.filter_by(serial_number="ALH-BAND-002").first()
-    abel = Device.query.filter_by(serial_number="ALH-BAND-004").first()
+    maya  = Device.query.filter_by(serial_number="ALH-BAND-001").first()
+    noah  = Device.query.filter_by(serial_number="ALH-BAND-002").first()
+    abel  = Device.query.filter_by(serial_number="ALH-BAND-004").first()
+    liya  = Device.query.filter_by(serial_number="ALH-BAND-005").first()
+
     alerts_data = [
         {
             "alert_type": "geofence",
@@ -279,6 +381,20 @@ def _seed_alerts():
             "message": "Abel's wearable is below 20% battery.",
             "device": abel,
             "acknowledged": True,
+        },
+        {
+            "alert_type": "geofence",
+            "severity": "critical",
+            "message": "Liya has left the home safe zone.",
+            "device": liya,
+            "acknowledged": False,
+        },
+        {
+            "alert_type": "sos",
+            "severity": "critical",
+            "message": "Silent SOS triggered on Liya's band.",
+            "device": liya,
+            "acknowledged": False,
         },
     ]
     for data in alerts_data:
