@@ -47,3 +47,43 @@ def role_required(role_name: str):
             return fn(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def role_required_any(*role_names: str):
+    """
+    Decorator that allows access if the user has ANY of the specified roles.
+
+    Usage:
+        @role_required_any('admin', 'police_officer')
+        def admin_or_police_view():
+            ...
+    """
+    def decorator(fn):
+        @wraps(fn)
+        @jwt_required()
+        def wrapper(*args, **kwargs):
+            from app.models.user import User
+            from app.extensions import db
+            user_id = get_jwt_identity()
+            try:
+                user_id = int(user_id)
+            except (ValueError, TypeError):
+                return error_response('Invalid user identity in token', status_code=401)
+            user = db.session.get(User, user_id)
+
+            if not user:
+                return error_response('User not found', status_code=401)
+
+            if not user.is_active:
+                return error_response('Account is deactivated', status_code=401)
+
+            if not user.role or user.role.name not in role_names:
+                return error_response(
+                    'Insufficient permissions',
+                    errors={'required_roles': list(role_names)},
+                    status_code=403,
+                )
+
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator

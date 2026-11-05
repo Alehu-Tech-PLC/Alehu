@@ -2,6 +2,36 @@ import Link from 'next/link';
 import { MarketingShell } from '@/components/MarketingShell';
 import { site } from '@/lib/site';
 
+function PortalCard({
+  href,
+  title,
+  description,
+  badge,
+  badgeColour,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  badge: string;
+  badgeColour: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col rounded-3xl bg-white p-6 shadow-card transition hover:-translate-y-1 hover:shadow-lg"
+    >
+      <span className={`self-start rounded-full px-3 py-1 text-xs font-semibold ${badgeColour}`}>
+        {badge}
+      </span>
+      <h3 className="mt-4 font-display text-2xl text-navy">{title}</h3>
+      <p className="mt-2 grow text-sm leading-6 text-ink/75">{description}</p>
+      <span className="mt-4 text-sm font-semibold text-teal group-hover:underline">
+        Sign in →
+      </span>
+    </Link>
+  );
+}
+
 const metrics = [
   { value: '<1.2s', label: 'Alert latency' },
   { value: '99.4%', label: 'AI detection accuracy' },
@@ -122,7 +152,39 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Portal access cards ── */}
       <section className="mx-auto max-w-6xl px-4 py-20">
+        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal">Secure portals</p>
+        <h2 className="mt-3 font-display text-4xl text-navy">Access your dashboard</h2>
+        <p className="mt-4 max-w-2xl text-ink/75">
+          Every stakeholder has a dedicated, role-gated view — built for the tasks they actually perform.
+        </p>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <PortalCard
+            href="/parent/login"
+            title="Parent portal"
+            description="See your child's live location, battery level, and any open alerts from a single calm view."
+            badge="For families"
+            badgeColour="bg-teal/10 text-teal"
+          />
+          <PortalCard
+            href="/police_officer/login"
+            title="Officer portal"
+            description="Critical alerts and SOS events surface here first — with GPS coordinates ready for dispatch."
+            badge="For law enforcement"
+            badgeColour="bg-blue-600/10 text-blue-700"
+          />
+          <PortalCard
+            href="/admin/login"
+            title="Admin portal"
+            description="Manage users, review fleet health, and maintain full platform visibility."
+            badge="Alehu staff"
+            badgeColour="bg-amber-100 text-amber-700"
+          />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-20">
         <div className="rounded-[2rem] bg-teal-soft p-8 md:p-12">
           <h2 className="font-display text-4xl text-navy">Ready for a careful school pilot?</h2>
           <p className="mt-4 max-w-2xl text-ink/75">

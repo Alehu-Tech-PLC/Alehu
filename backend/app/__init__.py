@@ -35,9 +35,11 @@ def create_app(config_name: str = 'development') -> Flask:
     migrate.init_app(app, db)
     jwt.init_app(app)
     bcrypt.init_app(app)
+    # CORS_ORIGINS is already parsed into a list by config.py
+    cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:3000', 'http://127.0.0.1:3000'])
     cors.init_app(
         app,
-        resources={r'/api/*': {'origins': app.config.get('CORS_ORIGINS', '*')}},
+        resources={r'/api/*': {'origins': cors_origins}},
         supports_credentials=True,
         allow_headers=['Content-Type', 'Authorization', 'X-Device-Key'],
         methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -59,21 +61,27 @@ def create_app(config_name: str = 'development') -> Flask:
     from app.routes.permissions import permissions_bp
     from app.routes.alerts import alerts_bp
     from app.routes.dashboard import dashboard_bp
+    from app.routes.dashboard_parent import dashboard_parent_bp
+    from app.routes.dashboard_police import dashboard_police_bp
+    from app.routes.dashboard_admin import dashboard_admin_bp
     from app.routes.ingest import ingest_bp
     from app.routes.contact import contact_bp
     from app.routes.health import health_bp
 
-    app.register_blueprint(health_bp,      url_prefix='/api')
-    app.register_blueprint(contact_bp,     url_prefix='/api')
-    app.register_blueprint(auth_bp,        url_prefix='/api/auth')
-    app.register_blueprint(users_bp,       url_prefix='/api/users')
-    app.register_blueprint(customers_bp,   url_prefix='/api/customers')
-    app.register_blueprint(devices_bp,     url_prefix='/api/devices')
-    app.register_blueprint(roles_bp,       url_prefix='/api/roles')
-    app.register_blueprint(permissions_bp, url_prefix='/api/permissions')
-    app.register_blueprint(alerts_bp,      url_prefix='/api/alerts')
-    app.register_blueprint(dashboard_bp,   url_prefix='/api/dashboard')
-    app.register_blueprint(ingest_bp,      url_prefix='/api/ingest')
+    app.register_blueprint(health_bp,            url_prefix='/api')
+    app.register_blueprint(contact_bp,           url_prefix='/api')
+    app.register_blueprint(auth_bp,              url_prefix='/api/auth')
+    app.register_blueprint(users_bp,             url_prefix='/api/users')
+    app.register_blueprint(customers_bp,         url_prefix='/api/customers')
+    app.register_blueprint(devices_bp,           url_prefix='/api/devices')
+    app.register_blueprint(roles_bp,             url_prefix='/api/roles')
+    app.register_blueprint(permissions_bp,       url_prefix='/api/permissions')
+    app.register_blueprint(alerts_bp,            url_prefix='/api/alerts')
+    app.register_blueprint(dashboard_bp,         url_prefix='/api/dashboard')
+    app.register_blueprint(dashboard_parent_bp,  url_prefix='/api/dashboard/parent')
+    app.register_blueprint(dashboard_police_bp,  url_prefix='/api/dashboard/police')
+    app.register_blueprint(dashboard_admin_bp,   url_prefix='/api/dashboard/admin')
+    app.register_blueprint(ingest_bp,            url_prefix='/api/ingest')
 
     # ------------------------------------------------------------------
     # 4. Global HTTP error handlers
